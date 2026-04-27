@@ -22,7 +22,7 @@ import glob
 from tkinter import filedialog as fd
 from scipy.interpolate import CubicSpline
 from scipy.optimize import minimize_scalar
-import MIN2
+from MIN2 import MIN2
 
 
 Vdir = "j:\\"
@@ -49,34 +49,34 @@ def sengiri(file,count=count):
     #file0=file
     #読み込むファイル名
     #-- ファイルの読み込み 読み込んだ太陽像はimg--
-    img=cv2.imread(file,0)
+    """img=cv2.imread(file,0)
     #-- 太陽像を円と考えて検出する --
     #（※太陽像の真ん中がサチレーションしているので、うまく検出できていない：宿題）
-    circles = MIN2.MIN2(file, limb_width=24)
+    circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, dp=3,minDist=80,param1=80,param2=100, minRadius=0, maxRadius=0)
+    if circles is None:
+        return None
     circles = np.array(circles)
     #-- 検出された円の中心(xc,yc)と円の半径r --
-    #print("circles[0,0,0]:", circles)
-    
     xc=np.float64(circles[0,0,0])
     yc=np.float64(circles[0,0,1])
     r=np.float64(circles[0,0,2])
     #print(r)    
+    """
+    xc, yc, r = MIN2(file)
     if file.endswith(".tiff" or ".tif"):
         img=cv2.imread(file,-1)
 
     #太陽像を数字として扱うための設定
     img=np.float64(img)
     imgg= cv2.imread(file,cv2.IMREAD_UNCHANGED)
-    
+    """
     plt.imshow(imgg,cmap='gray')
     theta = np.linspace(0, 2*np.pi, 400)
     circle_x = xc + r * np.cos(theta)
     circle_y = yc + r * np.sin(theta)
-
     plt.plot(circle_x, circle_y, 'c--', linewidth=2, label='Hough circle',alpha=.5)
     plt.savefig(f"C:\\Users\\fujit\\OneDrive\\デスクトップ\\circleBATTLE\\figure{file.split('\\')[-1]}.png")
-    
-    plt.close()
+    plt.close()"""
     #プロットの消去
     #plt.clf()
     #-- 空間微分によるlimb位置の検出 --
@@ -97,14 +97,14 @@ def sengiri(file,count=count):
 
         sample = img[int(yc+gaps):int(yc+gaps+1),int(xc-gaps_r-limb_wigth):int(xc-gaps_r+limb_wigth)]
         sample = np.ravel(sample)
-        d_sample = np.abs(np.gradient(sample))
+        d_sample = np.abs(np.diff(np.diff(sample)))
         Maxd_sample = np.amax(d_sample)
         index_Max_d_sample = np.where(d_sample == Maxd_sample)[0][0]
         """start = max(index_Max_d_sample - pad, 0)
         end = min(index_Max_d_sample + pad, len(sample)-1)
         x2 = np.arange(start, end)
         y2 = sample[start:end]"""
-        #cs = CubicSpline(x2, y2)
+          #cs = CubicSpline(x2, y2)
         #cs_g = cs.derivative()
         #max_x = minimize_scalar(lambda t: -cs_g(t), bounds=(x2[0], x2[-1]), method='bounded')
         real_r = gaps_r - limb_wigth + index_Max_d_sample#limbまでの距離
@@ -130,7 +130,7 @@ def sengiri(file,count=count):
         #右縁
         sample=img[int(yc+gaps):int(yc+gaps+1),int(xc+gaps_r-limb_wigth):int(xc+gaps_r+limb_wigth)]
         sample = np.ravel(sample)
-        d_sample = np.abs(np.gradient(sample))
+        d_sample = np.abs(np.diff(np.diff(sample)))
         Maxd_sample = np.amax(d_sample)
         index_Max_d_sample = np.where(d_sample == Maxd_sample)[0][0]
         """start = max(index_Max_d_sample - pad, 0)
@@ -147,7 +147,7 @@ def sengiri(file,count=count):
         #上縁
         sample=img[int(yc-gaps_r-limb_wigth):int(yc-gaps_r+limb_wigth),int(xc+gaps):int(xc+gaps+1)]
         sample = np.ravel(sample)
-        d_sample = np.abs(np.gradient(sample))
+        d_sample = np.abs(np.diff(np.diff(sample)))
         Maxd_sample = np.amax(d_sample)
         index_Max_d_sample = np.where(d_sample == Maxd_sample)[0][0]
         """start = max(index_Max_d_sample - pad, 0)
@@ -164,7 +164,7 @@ def sengiri(file,count=count):
         #下縁
         sample=img[int(yc+gaps_r-limb_wigth):int(yc+gaps_r+limb_wigth),int(xc+gaps):int(xc+gaps+1)]
         sample = np.ravel(sample)
-        d_sample = np.abs(np.gradient(sample))
+        d_sample = np.abs(np.diff(np.diff(sample)))
         Maxd_sample = np.amax(d_sample)
         index_Max_d_sample = np.where(d_sample == Maxd_sample)[0][0]
         """start = max(index_Max_d_sample - pad, 0)
