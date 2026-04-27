@@ -22,6 +22,7 @@ import glob
 from tkinter import filedialog as fd
 from scipy.interpolate import CubicSpline
 from scipy.optimize import minimize_scalar
+import MIN2
 
 
 Vdir = "j:\\"
@@ -51,9 +52,7 @@ def sengiri(file,count=count):
     img=cv2.imread(file,0)
     #-- 太陽像を円と考えて検出する --
     #（※太陽像の真ん中がサチレーションしているので、うまく検出できていない：宿題）
-    circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, dp=3,minDist=80,param1=80,param2=100, minRadius=0, maxRadius=0)
-    if circles is None:
-        return None
+    circles = MIN2.MIN2(file, limb_width=24)
     circles = np.array(circles)
     #-- 検出された円の中心(xc,yc)と円の半径r --
     #print("circles[0,0,0]:", circles)
