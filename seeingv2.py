@@ -25,7 +25,7 @@ from scipy.optimize import minimize_scalar
 
 
 Vdir = "j:\\"
-V_folderName="J:\2025-08-30Z\2025-08-30-LT"
+V_folderName=r"\2025-08-30Z\2025-08-30-LT"
 dir0= "C:\\"
 dir=dir0+'img\\'
 dirr = dir0 + "result\\"
@@ -40,7 +40,8 @@ gap = 170
 limb_wigth = 48 #単位はpix
 limb_wigth = int(limb_wigth / 2)
 pad = 5
-def sengiri(file):
+count=0
+def sengiri(file,count=count):
     lst = np.empty(gap*8)
     #plt.clf()
     #保存するファイル名
@@ -55,20 +56,28 @@ def sengiri(file):
         return None
     circles = np.array(circles)
     #-- 検出された円の中心(xc,yc)と円の半径r --
-    print("circles[0,0,0]:", circles)
+    #print("circles[0,0,0]:", circles)
     
     xc=np.float64(circles[0,0,0])
     yc=np.float64(circles[0,0,1])
     r=np.float64(circles[0,0,2])
-    print(r)    
+    #print(r)    
     if file.endswith(".tiff" or ".tif"):
         img=cv2.imread(file,-1)
 
     #太陽像を数字として扱うための設定
     img=np.float64(img)
-    imgg= cv2.imread(file,0)
+    imgg= cv2.imread(file,cv2.IMREAD_UNCHANGED)
+    
+    plt.imshow(imgg,cmap='gray')
+    theta = np.linspace(0, 2*np.pi, 400)
+    circle_x = xc + r * np.cos(theta)
+    circle_y = yc + r * np.sin(theta)
 
-
+    plt.plot(circle_x, circle_y, 'c--', linewidth=2, label='Hough circle',alpha=.5)
+    plt.savefig(f"C:\\Users\\fujit\\OneDrive\\デスクトップ\\circleBATTLE\\figure{file.split('\\')[-1]}.png")
+    
+    plt.close()
     #プロットの消去
     #plt.clf()
     #-- 空間微分によるlimb位置の検出 --
@@ -84,15 +93,18 @@ def sengiri(file):
         gaps_r =int(np.sqrt(np.abs(r**2 - gaps**2)))
         #  memo img[top : bottom, left : right]
         #これは左縁
-        sample = img[yc+gaps:yc+gaps+1,xc-gaps_r-limb_wigth:xc-gaps_r+limb_wigth]
+        gaps_r = int(gaps_r)
+        gaps = int(gaps)
+
+        sample = img[int(yc+gaps):int(yc+gaps+1),int(xc-gaps_r-limb_wigth):int(xc-gaps_r+limb_wigth)]
         sample = np.ravel(sample)
         d_sample = np.abs(np.gradient(sample))
         Maxd_sample = np.amax(d_sample)
         index_Max_d_sample = np.where(d_sample == Maxd_sample)[0][0]
-        start = max(index_Max_d_sample - pad, 0)
+        """start = max(index_Max_d_sample - pad, 0)
         end = min(index_Max_d_sample + pad, len(sample)-1)
         x2 = np.arange(start, end)
-        y2 = sample[start:end]
+        y2 = sample[start:end]"""
         #cs = CubicSpline(x2, y2)
         #cs_g = cs.derivative()
         #max_x = minimize_scalar(lambda t: -cs_g(t), bounds=(x2[0], x2[-1]), method='bounded')
@@ -117,15 +129,15 @@ def sengiri(file):
 
         #繰り返し
         #右縁
-        sample=img[yc+gaps:yc+gaps+1,xc+gaps_r-limb_wigth:xc+gaps_r+limb_wigth]
+        sample=img[int(yc+gaps):int(yc+gaps+1),int(xc+gaps_r-limb_wigth):int(xc+gaps_r+limb_wigth)]
         sample = np.ravel(sample)
         d_sample = np.abs(np.gradient(sample))
         Maxd_sample = np.amax(d_sample)
         index_Max_d_sample = np.where(d_sample == Maxd_sample)[0][0]
-        start = max(index_Max_d_sample - pad, 0)
+        """start = max(index_Max_d_sample - pad, 0)
         end = min(index_Max_d_sample + pad, len(sample)-1)
         x2 = np.arange(start, end)
-        y2 = sample[start:end]
+        y2 = sample[start:end]"""
         #cs = CubicSpline(x2, y2)
         #cs_g = cs.derivative()
         #max_x = minimize_scalar(lambda t: cs_g(t), bounds=(x2[0], x2[-1]), method='bounded')        
@@ -134,15 +146,15 @@ def sengiri(file):
 
         #plt.plot([xc+gaps_r-limb_wigth,xc+gaps_r+limb_wigth],[yc+gaps,yc+gaps],color="b")
         #上縁
-        sample=img[yc-gaps_r-limb_wigth:yc-gaps_r+limb_wigth,xc+gaps:xc+gaps+1]
+        sample=img[int(yc-gaps_r-limb_wigth):int(yc-gaps_r+limb_wigth),int(xc+gaps):int(xc+gaps+1)]
         sample = np.ravel(sample)
         d_sample = np.abs(np.gradient(sample))
         Maxd_sample = np.amax(d_sample)
         index_Max_d_sample = np.where(d_sample == Maxd_sample)[0][0]
-        start = max(index_Max_d_sample - pad, 0)
+        """start = max(index_Max_d_sample - pad, 0)
         end = min(index_Max_d_sample) + pad, len(sample)
         x2 = np.arange(start, end)
-        y2 = sample[start:end]
+        y2 = sample[start:end]"""
         #cs = CubicSpline(x2, y2)
         #cs_g = cs.derivative()
         #max_x = minimize_scalar(lambda t: -cs_g(t), bounds=(x2[0], x2[-1]), method='bounded')
@@ -151,15 +163,15 @@ def sengiri(file):
 
         #plt.plot([xc+gaps,xc+gaps],[yc-gaps_r-limb_wigth,yc-gaps_r+limb_wigth],color="r")
         #下縁
-        sample=img[yc+gaps_r-limb_wigth:yc+gaps_r+limb_wigth,xc+gaps:xc+gaps+1]
+        sample=img[int(yc+gaps_r-limb_wigth):int(yc+gaps_r+limb_wigth),int(xc+gaps):int(xc+gaps+1)]
         sample = np.ravel(sample)
         d_sample = np.abs(np.gradient(sample))
         Maxd_sample = np.amax(d_sample)
         index_Max_d_sample = np.where(d_sample == Maxd_sample)[0][0]
-        start = max(index_Max_d_sample - pad, 0)
+        """start = max(index_Max_d_sample - pad, 0)
         end = min(index_Max_d_sample + pad, len(sample)-1)
         x2 = np.arange(start, end)
-        y2 = sample[start:end]
+        y2 = sample[start:end]"""
         #cs = CubicSpline(x2, y2)
         #cs_g = cs.derivative()
         #max_x = minimize_scalar(lambda t: cs_g(t), bounds=(x2[0], x2[-1]), method='bounded')
@@ -185,7 +197,7 @@ def Kansu(Sam_dir,executor=None):
     #sizeは太陽のサイズ（半径）を格納するリスト
     sizes = []
     files = glob.glob(Sam_dir+"*.tiff") + glob.glob(Sam_dir+"*.tif") + glob.glob(Sam_dir+"*.jpg")
-    print("files",files)
+    #print("files",files)
     with tqdm.tqdm(total=len(files)) as progress:
         lsts=ex.map(sengiri, files)
         for data in lsts:
@@ -263,10 +275,10 @@ def Kansu(Sam_dir,executor=None):
     plt.savefig(dirr+"averages"+"\\"+foldername+".png")
     #ここまでが移動平均
     
-    lst = np.array([V_folderName + foldername,st_max,mxcount,st_min,mncount,datetime.datetime.now().replace(microsecond=0),np.median(sts),np.average(sts),location])#sts1mx,sts1mn])
+    lst = np.array([V_folderName + foldername,st_max,mxcount,st_min,mncount,datetime.datetime.now().replace(microsecond=0),np.median(sts),np.average(sts),location,sts1mx,sts1mn])
     lst = lst.reshape(len(lst),1)
     #この行でエラーが出る場合はプログラムフォルダ内に「result」フォルダを作成し、「results.xlsx」を作成してください。
-    df = pd.DataFrame(lst.T, columns=["name", "max", "max_frame", "min", "min_frame","Date time","median","average","location"])#,"移動平均mx","移動平均mn"])
+    df = pd.DataFrame(lst.T, columns=["name", "max", "max_frame", "min", "min_frame","Date time","median","average","location","移動平均mx","移動平均mn"])
     return df
 
 if __name__ == '__main__':
@@ -278,4 +290,4 @@ if __name__ == '__main__':
             Df = pd.concat([Df,add])
             #print()
             #plt.close
-            Df.to_csv("C:\\Users\\fujit\\OneDrive\\デスクトップ\\cop_gaps_seev2.xlsx", index=False,)
+            Df.to_csv("C:\\Users\\fujit\\OneDrive\\デスクトップ\\AIUEO.xlsx", index=False,)
