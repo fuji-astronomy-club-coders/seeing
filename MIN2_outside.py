@@ -26,7 +26,7 @@ import sys
 from win11toast import toast
 from KANSUU import folder_read
 from KANSUU import llen
-from kansu import Kansu
+from kansu import Kansu_onlystd
 from sengiries import sengiri_X2_justOUTside
 
 argv=sys.argv
@@ -94,7 +94,7 @@ if __name__=="__main__":#関数の呼び出し時は起動しない
                 out_path=outdir+"\\"+pats.split("\\")[-1]+"_by_"+__file__.split("\\")[-1]+".xlsx"#出力xlsxのパスを作成
             with concurrent.futures.ProcessPoolExecutor(max_workers=os.cpu_count()) as ex:
                 #↑並列処理用のやつ
-                result=Kansu(patt,ex,sengiri_X2_justOUTside)#主処理、フォルダのパスと並列処理のやつが引数。
+                result=Kansu_onlystd(patt,ex,sengiri_X2_justOUTside)#主処理、フォルダのパスと並列処理のやつが引数。
 
             
             mode="a" if os.path.exists(out_path) else "w"#出力xlsxが既存か否かによってmake_sheetのmodeを変更
