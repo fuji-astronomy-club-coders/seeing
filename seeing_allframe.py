@@ -20,6 +20,7 @@ import time
 from pathlib import Path
 import glob
 import time
+from KANSUU import MIN2
 from tkinter import filedialog as fd
 from scipy.interpolate import CubicSpline
 from scipy.optimize import minimize_scalar
@@ -53,7 +54,7 @@ def folder_read(fpath):
         if os.path.isdir(os.path.join(fpath, name))
         ]
     return folders
-def sengiri(file,count=count):
+def sengiri(file):
     lst = np.zeros(gap*8)
     #plt.clf()
     #保存するファイル名
