@@ -24,8 +24,10 @@ from scipy.interpolate import CubicSpline
 from scipy.optimize import minimize_scalar
 import sys
 from win11toast import toast
-from KANSUU import MIN2
-
+from KANSUU import folder_read
+from KANSUU import llen
+from kansu import Kansu
+from sengiri import sengiri_X2_justOUTside
 
 argv=sys.argv
 
@@ -48,123 +50,8 @@ count=0
 
 
 start=time.time()
-def folder_read(fpath):
-    folders = [
-        name for name in os.listdir(fpath)
-        if os.path.isdir(os.path.join(fpath, name))
-        ]
-    return folders
-
-def sengiri_X2_justOUTside(file):
-    if file.endswith(".tiff" or ".tif"):
-        lst = np.zeros(gap*8)
-        xc, yc, r = MIN2(file)
-        img= cv2.imread(file,cv2.IMREAD_UNCHANGED)
-        for gaps in range(-gap , gap):
-        
-            #plt.clf()
-            #太陽の縁を探索
-            gaps_r =int(np.sqrt(np.abs(r**2 - gaps**2)))
-            gaps_r = int(gaps_r)
-            gaps = int(gaps)
-            #  memo img[top : bottom, left : right]
-            
-            pl=["L","R","T","B"]
-            xyof=[
-                (gaps,gaps+1)
-                ,[(-gaps_r-limb_wigth,-gaps_r+limb_wigth),(gaps_r-limb_wigth,gaps_r+limb_wigth)]
-            ]
-            #縦倒し,逆順
-            pldc={
-                "L":(True,0),
-                "R":(True,1),
-                "T":(False,0),
-                "B":(False,1)
-                }
-            for place in pl:
-                try:
-                    pld = pldc[place]
-                    if pld[0]:
-                        y_of,x_of = xyof[0],xyof[1][pld[1]] 
-                    elif not pld[0]:
-                        y_of,x_of = xyof[1][pld[1]],xyof[0]
-                    sample=img[int(yc+y_of[0]):int(yc+y_of[1]),int(xc+x_of[0]):int(xc+x_of[1])]
-                    sample=np.array(np.ravel(sample))
-                    if bool(pld[1]):
-                        sample=np.flip(sample)
-                    print("sample",len(sample))
-                    fd_sample = np.abs(np.gradient(sample))
-                    Maxd_sample = np.amax(fd_sample)
-                    findex_Max_d_sample = np.where(fd_sample == Maxd_sample)[0][0]
-                    d_sample = np.abs(np.gradient(np.gradient(sample)))
-                    d_sample=d_sample[:findex_Max_d_sample]
-                    Maxd_sample=np.max(d_sample)
-                    index_Max_d_sample = np.where(d_sample == Maxd_sample)[0][0]
-                    index_Max_d_sample = 2*limb_wigth-index_Max_d_sample if bool(pld[1]) else index_Max_d_sample
-                    real_r = gaps_r - limb_wigth +index_Max_d_sample#limbまでの距離
-                    lst[gaps+(gap*(pl.index(place)*2+1))] = real_r - gaps_r
-            
-                except:
-                    ero+=1
-                    error_reason = str(sys.exc_info()[0]) + ": " + str(sys.exc_info()[1])
-                    print(error_reason)
-                    print("sample",sample)
-                    print("indx",findex_Max_d_sample)
-                    print("Msapl", Maxd_sample)
-            
-    return lst
-def Kansu(Sam_dir,executor=None):
-    foldername = os.path.basename(os.path.dirname(Sam_dir))
-    #print()
-    #print(foldername)
-    if "LT" in foldername :
-        location = "LoofTop"
-    elif "PL" in foldername :
-        location = "PoolSide"
-    else:
-        location = "Unknown"
-    #Bunsan_Alltime = 0
-    #lstはシーイングサイズを格納
-    lst = []
-    #sizeは太陽のサイズ（半径）を格納するリスト
-    files = glob.glob(Sam_dir+"\\"+"*.tiff") + glob.glob(Sam_dir+"*.tif") + glob.glob(Sam_dir+"*.jpg")
-    #print("files",files)
-    with tqdm.tqdm(total=len(files)) as progress:
-        lsts=ex.map(sengiri_X2_justOUTside, files)
-        for data in lsts:
-            progress.update(1)
-            lst.append(data)
 
 
-    st_max = 0
-    st_min = 1000000000
-    counter = 0  
-    mxcount = 0
-    mncount = 0
-    #各フレームの標準偏差をstsに格納
-    sts = []
-    for l in lst:
-        if l is None:
-            continue
-        st = np.std(l)
-        sts.append(float(st))
-        if st_max < st:
-            st_max = st
-            mxcount= counter
-        if st_min > st:
-            st_min = st
-            mncount=counter
-        counter += 1
-
-    #print("MAX",st_max,"frame",mxcount)
-    #print("MIN",st_min,"frame",mncount)
-    print("median",np.median(sts))
-    print("average",np.average(sts))
-    #print("size",np.average(sizes))
-    #print("location",location)
-    return sts
-def llen(ist):
-    return range(len((ist)))
 def make_sheet(result,outpath,mode,nc):
     colmsnumber=0
     colms=[]
