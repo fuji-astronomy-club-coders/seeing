@@ -1,11 +1,11 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-from KANSUU import list_folder
+from KANSUU import list_folders
 from glob import glob
 from sengiries import sengiri_X2_justOUTside_edgepoints
 
-sun_image=glob(".\\"+"*.tiff")[0]
+sun_image=glob(".\\"+"*.tiff")[1]
 two,one=sengiri_X2_justOUTside_edgepoints(sun_image)
 plt.imshow(cv2.imread(sun_image, cv2.IMREAD_UNCHANGED), cmap='gray')
 size=3.5

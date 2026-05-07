@@ -208,7 +208,8 @@ def sengiri_X2_justOUTside_edgepoints(
     dy,fy=[],[]
     if file.endswith(".tiff" or ".tif"):
         lst = np.zeros(gap*8)
-        xc, yc, r = MIN2(file)
+        xc, yc, r = [int(i) for i in MIN2(file)]
+        
         img= cv2.imread(file,cv2.IMREAD_UNCHANGED)
         pl=["L","R","T","B"]
         #縦倒し,逆順
@@ -227,7 +228,7 @@ def sengiri_X2_justOUTside_edgepoints(
                 return xc+gaps,yc-far
             elif place=="B":
                 return xc+gaps,yc+far
-        for gaps in range(-gap , gap):
+        for gaps in range(-gap , gap):          
             #太陽の縁を探索
             far =int(np.sqrt(np.abs(r**2 - gaps**2)))#円の中線からの距離
             far = int(far)
@@ -242,8 +243,10 @@ def sengiri_X2_justOUTside_edgepoints(
                 sample=np.array(np.ravel(sample))
                 if bool(pld[1]):#すべての場所で,sampleのindex正向きを内側へ。これにより、limb_wigth-indexでそのままMedgeとの距離にできる。
                     sample=np.flip(sample)
+                fd_sample = np.gradient(sample)
                 fd_sample = np.abs(np.gradient(sample))#1回微分
-                findex_Max_d_sample = np.where(fd_sample == np.amax(fd_sample))[0][0]#1回微分の最大値のindex
+                fdmax = np.amax(fd_sample)
+                findex_Max_d_sample = np.where(fd_sample == fdmax)[0][0]#1回微分の最大値のindex
                 d_sample = np.abs(np.gradient(np.gradient(sample)))#2回微分
                 d_sample = d_sample[:findex_Max_d_sample]#2回微分について1回微分の最大値よりも外側の範囲を抽出
                 index_Max_d_sample = np.where(d_sample == np.max(d_sample))[0][0]#2回微分の最大値                
@@ -251,20 +254,24 @@ def sengiri_X2_justOUTside_edgepoints(
                 d_far=far+limb_wigth-index_Max_d_sample
                 if place == "L":
                     dx.append(xc-d_far)
+                    dy.append(yc+gaps)
                     fx.append(xc-f_far)
-                    (dy,fy).append(yc+gaps)
+                    fy.append(yc+gaps)
                 elif place == "R":
                     dx.append(xc+d_far)
+                    dy.append(yc+gaps)
                     fx.append(xc+f_far)
-                    (dy,fy).append(yc+gaps)
+                    fy.append(yc+gaps)
                 elif place == "T":
                     dy.append(yc-d_far)
+                    dx.append(xc+gaps)
                     fy.append(yc-f_far)
-                    (dx,dy).append(xc+gaps)
+                    fx.append(xc+gaps)
                 elif place == "B":
                     dy.append(yc+d_far)
+                    dx.append(xc+gaps)
                     fy.append(yc+f_far)
-                    (dx,dy).append(xc+gaps)
+                    fx.append(xc+gaps)
     return [dx,dy],[fx,fy]
 
     return twox,twoy
