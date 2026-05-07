@@ -29,15 +29,15 @@ def sengiri_X2_GetERO(
         for gaps in range(-gap , gap):
             #plt.clf()
             #太陽の縁を探索
-            gaps_r =int(np.sqrt(np.abs(r**2 - gaps**2)))
-            gaps_r = int(gaps_r)
+            far =int(np.sqrt(np.abs(r**2 - gaps**2)))
+            far = int(far)
             gaps = int(gaps)
             #  memo img[top : bottom, left : right]
             
             pl=["L","R","T","B"]
             xyof=[
                 (gaps,gaps+1)
-                ,[(-gaps_r-limb_wigth,-gaps_r+limb_wigth),(gaps_r-limb_wigth,gaps_r+limb_wigth)]
+                ,[(-far-limb_wigth,-far+limb_wigth),(far-limb_wigth,far+limb_wigth)]
             ]
             #縦倒し,逆順
             pldc={
@@ -65,8 +65,8 @@ def sengiri_X2_GetERO(
                     Maxd_sample = np.amax(d_sample[:findex_Max_d_sample])
                     index_Max_d_sample = np.where(d_sample == Maxd_sample)[0][0]
                     index_Max_d_sample = 2*limb_wigth-index_Max_d_sample if bool(pld[1]) else index_Max_d_sample
-                    real_r = gaps_r - limb_wigth +index_Max_d_sample#limbまでの距離
-                    lst[gaps+(gap*(pl.index(place)*2+1))] = real_r - gaps_r
+                    real_r = far - limb_wigth +index_Max_d_sample#limbまでの距離
+                    lst[gaps+(gap*(pl.index(place)*2+1))] = real_r - far
                 except:
                     error_reason = str(sys.exc_info()[0]) + ": " + str(sys.exc_info()[1])
                     erofile.append((place,error_reason))
@@ -92,15 +92,15 @@ def sengiri_X2(
         
             #plt.clf()
             #太陽の縁を探索
-            gaps_r =int(np.sqrt(np.abs(r**2 - gaps**2)))
-            gaps_r = int(gaps_r)
+            far =int(np.sqrt(np.abs(r**2 - gaps**2)))
+            far = int(far)
             gaps = int(gaps)
             #  memo img[top : bottom, left : right]
             
             pl=["L","R","T","B"]
             xyof=[
                 (gaps,gaps+1)
-                ,[(-gaps_r-limb_wigth,-gaps_r+limb_wigth),(gaps_r-limb_wigth,gaps_r+limb_wigth)]
+                ,[(-far-limb_wigth,-far+limb_wigth),(far-limb_wigth,far+limb_wigth)]
             ]
             #縦倒し,逆順
             pldc={
@@ -125,8 +125,8 @@ def sengiri_X2(
                 findex_Max_d_sample = np.where(fd_sample == Maxd_sample)[0][0]
                 d_sample = np.abs(np.gradient(np.gradient(sample)))
                 index_Max_d_sample = 2*limb_wigth-index_Max_d_sample if bool(pld[1]) else index_Max_d_sample
-                real_r = gaps_r - limb_wigth +index_Max_d_sample#limbまでの距離
-                lst[gaps+(gap*(pl.index(place)*2+1))] = real_r - gaps_r
+                real_r = far - limb_wigth +index_Max_d_sample#limbまでの距離
+                lst[gaps+(gap*(pl.index(place)*2+1))] = real_r - far
     return lst
 
 def sengiri_X2_justOUTside(    
@@ -147,15 +147,15 @@ def sengiri_X2_justOUTside(
         
             #plt.clf()
             #太陽の縁を探索
-            gaps_r =int(np.sqrt(np.abs(r**2 - gaps**2)))
-            gaps_r = int(gaps_r)
+            far =int(np.sqrt(np.abs(r**2 - gaps**2)))
+            far = int(far)
             gaps = int(gaps)
             #  memo img[top : bottom, left : right]
             
             pl=["L","R","T","B"]
             xyof=[
                 (gaps,gaps+1)
-                ,[(-gaps_r-limb_wigth,-gaps_r+limb_wigth),(gaps_r-limb_wigth,gaps_r+limb_wigth)]
+                ,[(-far-limb_wigth,-far+limb_wigth),(far-limb_wigth,far+limb_wigth)]
             ]
             #縦倒し,逆順
             pldc={
@@ -184,8 +184,8 @@ def sengiri_X2_justOUTside(
                     Maxd_sample=np.max(d_sample)
                     index_Max_d_sample = np.where(d_sample == Maxd_sample)[0][0]
                     index_Max_d_sample = 2*limb_wigth-index_Max_d_sample if bool(pld[1]) else index_Max_d_sample
-                    real_r = gaps_r - limb_wigth +index_Max_d_sample#limbまでの距離
-                    lst[gaps+(gap*(pl.index(place)*2+1))] = real_r - gaps_r
+                    real_r = far - limb_wigth +index_Max_d_sample#limbまでの距離
+                    lst[gaps+(gap*(pl.index(place)*2+1))] = real_r - far
             
                 except:
                     ero+=1
@@ -204,79 +204,68 @@ def sengiri_X2_justOUTside_edgepoints(
     """
     listです！！説明してる暇はありません！！
     """
-    twox,twoy=[],[]
-    onex,oney=[],[]
+    dx,fx=[],[]
+    dy,fy=[],[]
     if file.endswith(".tiff" or ".tif"):
         lst = np.zeros(gap*8)
         xc, yc, r = MIN2(file)
         img= cv2.imread(file,cv2.IMREAD_UNCHANGED)
+        pl=["L","R","T","B"]
+        #縦倒し,逆順
+        pldc={
+            "L":(True,False),
+            "R":(True,True),
+            "T":(False,False),
+            "B":(False,True)
+            }
+        def MIN_edge(place,gaps,far):
+            if place=="L":
+                return xc-far,yc+gaps
+            elif place=="R":
+                return xc+far,yc+gaps
+            elif place=="T":
+                return xc+gaps,yc-far
+            elif place=="B":
+                return xc+gaps,yc+far
         for gaps in range(-gap , gap):
-        
-            #plt.clf()
             #太陽の縁を探索
-            gaps_r =int(np.sqrt(np.abs(r**2 - gaps**2)))
-            gaps_r = int(gaps_r)
+            far =int(np.sqrt(np.abs(r**2 - gaps**2)))#円の中線からの距離
+            far = int(far)
             gaps = int(gaps)
-            #  memo img[top : bottom, left : right]
-            
-            pl=["L","R","T","B"]
-            xyof=[
-                (gaps,gaps+1)
-                ,[(-gaps_r-limb_wigth,-gaps_r+limb_wigth),(gaps_r-limb_wigth,gaps_r+limb_wigth)]
-            ]
-            #縦倒し,逆順
-            pldc={
-                "L":(True,0),
-                "R":(True,1),
-                "T":(False,0),
-                "B":(False,1)
-                }
             for place in pl:
-                
                 pld = pldc[place]
-                "↑参照しておくよん"
-                if pld[0]:
-                    y_of,x_of = xyof[0],xyof[1][pld[1]] 
-                elif not pld[0]:
-                    y_of,x_of = xyof[1][pld[1]],xyof[0]
-                sample=img[int(yc+y_of[0]):int(yc+y_of[1]),int(xc+x_of[0]):int(xc+x_of[1])]
-                sample=np.array(np.ravel(sample))
-                if bool(pld[1]):
-                    sample=np.flip(sample)
-                fd_sample = np.abs(np.gradient(sample))
-                Maxd_sample = np.amax(fd_sample)
-                findex_Max_d_sample = np.where(fd_sample == Maxd_sample)[0][0]
-                d_sample = np.abs(np.gradient(np.gradient(sample)))
-                if pldc[place][1] == 1:#縦倒しのとき
-                    d_sample=d_sample[:findex_Max_d_sample]
+                Medge=MIN_edge(place,gaps,far)
+                if pld[1]:
+                    sample=img[Medge[0]-limb_wigth:Medge[0]+limb_wigth,Medge[1]:Medge[1]+1]
                 else:
-                    d_sample=d_sample[findex_Max_d_sample:]
-                Maxd_sample=np.max(d_sample)
-                index_Max_d_sample = np.where(d_sample == Maxd_sample)[0][0]
-                index_Max_d_sample = 2*limb_wigth-index_Max_d_sample if bool(pld[1]) else index_Max_d_sample
-                real_r = gaps_r - limb_wigth +index_Max_d_sample +(-limb_wigth if not bool(pld[1]) else findex_Max_d_sample)#limbまでの距離
-                freal_r = gaps_r - limb_wigth +findex_Max_d_sample#limbまでの距離
+                    sample=img[Medge[0]:Medge[0]+1,Medge[1]-limb_wigth:Medge[1]+limb_wigth]
+                sample=np.array(np.ravel(sample))
+                if bool(pld[1]):#すべての場所で,sampleのindex正向きを内側へ。これにより、limb_wigth-indexでそのままMedgeとの距離にできる。
+                    sample=np.flip(sample)
+                fd_sample = np.abs(np.gradient(sample))#1回微分
+                findex_Max_d_sample = np.where(fd_sample == np.amax(fd_sample))[0][0]#1回微分の最大値のindex
+                d_sample = np.abs(np.gradient(np.gradient(sample)))#2回微分
+                d_sample = d_sample[:findex_Max_d_sample]#2回微分について1回微分の最大値よりも外側の範囲を抽出
+                index_Max_d_sample = np.where(d_sample == np.max(d_sample))[0][0]#2回微分の最大値                
+                f_far=far+limb_wigth-findex_Max_d_sample#中心線からの距離
+                d_far=far+limb_wigth-index_Max_d_sample
                 if place == "L":
-                    twox.append(xc-real_r)
-                    twoy.append(yc+gaps)
-                    onex.append(xc+-freal_r)
-                    oney.append(yc+gaps)
+                    dx.append(xc-d_far)
+                    fx.append(xc-f_far)
+                    (dy,fy).append(yc+gaps)
                 elif place == "R":
-                    twox.append(xc+real_r)
-                    twoy.append(yc+gaps)
-                    onex.append(xc+freal_r)
-                    oney.append(yc+gaps)
+                    dx.append(xc+d_far)
+                    fx.append(xc+f_far)
+                    (dy,fy).append(yc+gaps)
                 elif place == "T":
-                    twox.append(xc+gaps)
-                    twoy.append(yc-real_r)
-                    onex.append(xc+gaps)
-                    oney.append(yc-freal_r)
+                    dy.append(yc-d_far)
+                    fy.append(yc-f_far)
+                    (dx,dy).append(xc+gaps)
                 elif place == "B":
-                    twox.append(xc+gaps)
-                    twoy.append(yc+real_r)
-                    onex.append(xc+gaps)
-                    oney.append(yc+freal_r)
-    return [twox,twoy],[onex,oney]
+                    dy.append(yc+d_far)
+                    fy.append(yc+f_far)
+                    (dx,dy).append(xc+gaps)
+    return [dx,dy],[fx,fy]
 
     return twox,twoy
 def sengiri_X2_drowero(file,
@@ -297,15 +286,15 @@ def sengiri_X2_drowero(file,
         
             #plt.clf()
             #太陽の縁を探索
-            gaps_r =int(np.sqrt(np.abs(r**2 - gaps**2)))
-            gaps_r = int(gaps_r)
+            far =int(np.sqrt(np.abs(r**2 - gaps**2)))
+            far = int(far)
             gaps = int(gaps)
             #  memo img[top : bottom, left : right]
             
             pl=["L","R","T","B"]
             xyof=[
                 (gaps,gaps+1)
-                ,[(-gaps_r-limb_wigth,-gaps_r+limb_wigth),(gaps_r-limb_wigth,gaps_r+limb_wigth)]
+                ,[(-far-limb_wigth,-far+limb_wigth),(far-limb_wigth,far+limb_wigth)]
             ]
             #縦倒し,逆順
             pldc={
@@ -333,8 +322,8 @@ def sengiri_X2_drowero(file,
                     Maxd_sample = np.amax(d_sample[:findex_Max_d_sample])
                     index_Max_d_sample = np.where(d_sample == Maxd_sample)[0][0]
                     index_Max_d_sample = 2*limb_wigth-index_Max_d_sample if bool(pld[1]) else index_Max_d_sample
-                    real_r = gaps_r - limb_wigth +index_Max_d_sample#limbまでの距離
-                    lst[gaps+(gap*(pl.index(place)*2+1))] = real_r - gaps_r
+                    real_r = far - limb_wigth +index_Max_d_sample#limbまでの距離
+                    lst[gaps+(gap*(pl.index(place)*2+1))] = real_r - far
                     if gaps==lookgap:    
                         fig, ax = plt.subplots()
                         # タイトル
