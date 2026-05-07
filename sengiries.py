@@ -186,9 +186,12 @@ def sengiri_X2_drowero(file,
                     fd_sample = np.abs(np.gradient(sample))
                     fMaxd_sample = np.amax(fd_sample)
                     findex_Max_d_sample = np.where(fd_sample == fMaxd_sample)[0][0]
-                    d_sample = np.abs(np.gradient(np.gradient(sample)))
-                    Maxd_sample = np.amax(d_sample[:findex_Max_d_sample])
-                    index_Max_d_sample = np.where(d_sample == Maxd_sample)[0][0]
+
+                    grad_sample = np.abs(np.gradient(np.gradient(sample)))
+                    diff_sample = np.abs(np.diff(np.diff(sample)))
+                    diff_sample = np.array([0])+diff_sample+np.array([0])
+                    Maxd_sample = np.amax(grad_sample[:findex_Max_d_sample])
+                    index_Max_d_sample = np.where(grad_sample == Maxd_sample)[0][0]
                     index_Max_d_sample = 2*limb_wigth-index_Max_d_sample if bool(pld[1]) else index_Max_d_sample
                     real_r = gaps_r - limb_wigth +index_Max_d_sample#limbまでの距離
                     lst[gaps+(gap*(pl.index(place)*2+1))] = real_r - gaps_r
@@ -199,7 +202,8 @@ def sengiri_X2_drowero(file,
                         fig.text(0.5, 0.92, f"error reason: {str(sys.exc_info()[0]) + ': ' + str(sys.exc_info()[1])}", ha='center')
                         # 第1軸（左）
                         ax.plot(fd_sample, label="fd_sample")
-                        ax.plot(d_sample, label="d_sample")
+                        ax.plot(grad_sample, label="grad_sample")
+                        ax.plot(diff_sample, label="diff_sample")
                         ax.scatter(findex_Max_d_sample, fMaxd_sample, color="red")
                         # 第2軸（右）
                         ax2 = ax.twinx()
@@ -239,3 +243,4 @@ def sengiri_X2_drowero(file,
                     plt.show(block=True)
                     
     return lst
+
