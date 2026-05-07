@@ -8,15 +8,27 @@ from KANSUU import cash
 黒点を誤検知していたので、たいようの内側を微分の値=0で埋めます。
 """
 
-def bury_line(iwhichxy,place):
-    
+def bury_line(line,iwhichxy,place):
+    """line:分割線に沿った画素値の配列, iwhichxy:分割線の方向, place:分割線の位置"""
+    #画像上のlineとおなじ位置のlistで、mask_cir_statと重なる範囲は0,それ以外は1のmaskを作成して、lineにかけることで、太陽の内側を埋める。
+    mask=[1]*width if iwhichxy=="x_line" else [1]*height
+    if iwhichxy=="x_line":#x_lineならば、placeはy座標、iはx座標
+        for i in range(width):
+            if (place-mask_cir_stat[1])**2+(i-mask_cir_stat[0])**2 < mask_cir_stat[2]**2:
+                mask[i]=0
+    elif iwhichxy=="y_line":#y_lineならば、placeはx座標、iはy座標
+        for i in range(height):
+            if (i-mask_cir_stat[1])**2+(place-mask_cir_stat[0])**2 < mask_cir_stat[2]**2:
+                mask[i]=0
+    return np.array(mask)*line#maskをかけることで、太陽の内側を埋める。 
+
 def cut_and_smpling(sun_threshold):#imgの画像をnで分割、太陽の縁の点をsampling
     #画像を分割して実際の縁の点を収集
     div=[]
     points=np.array([])#実際の縁の点を格納するための配列
     for line_xy in ("x_line","y_line"):#x_lineは横線、y_lineは縦線
         for i in range(1,divnum):
-            place = height * i // divnum             if line_xy == "x_line" else width * i // divnum#分割線の位置を計算
+            place = height * i // divnum      if line_xy == "x_line" else width * i // divnum#分割線の位置を計算
             line = img[place,:].astype(float) if line_xy == "x_line" else img[:, place].astype(float)#分割線に沿った画素値を取得
             if np.max(line) <= sun_threshold:#太陽像上を通るか
                 continue
@@ -43,7 +55,8 @@ def fit_circle(spots):#縁の点のサンプルを受け取って円のstatusを
     R = np.sqrt(cx**2 + cy**2 - C)
     return [cx,cy,R]
 
-def show_circle(x,y):
+def show_circle(spots):#円のstatusを受け取って、画像に円と縁の点を描画して表示する。
+    x,y=spots[0],spots[1]
     cx,cy,R=cir_stat[0],cir_stat[1],cir_stat[2]
     fig, ax = plt.subplots()#figとaxの作成
     ax.imshow(img, cmap="gray")#画像をグレースケールで表示
@@ -79,7 +92,7 @@ def show_circle(x,y):
     ax.axis('equal')###
     plt.show()#windowで表示
 
-def MIN2_bury_sunspots(file,n=10,UNC=True):#from second pictures
+def MIN2_bury_sunspots(file,n=10,UNC=True,mask=None,show=False):#from second pictures
     #===基本的な変数をglobalで宣言===
     global divnum#分割数、引数ではnとして受け取っている。
     divnum=n
@@ -94,12 +107,19 @@ def MIN2_bury_sunspots(file,n=10,UNC=True):#from second pictures
     
     global height, width#画像の高さと幅
     height, width = img.shape
-    
-    mask_cir_stat=cash.get()
+
+    global mask_cir_stat#太陽の内側を埋めるための円の情報[cx, cy, R]
+    mask_cir_stat = mask 
+    if mask is None:
+        mask,info=cash().load()
+        print(f"mask loaded from cash. info: {info}")
+        mask_cir_stat=[int(i) for i in mask.split(",")]
     
     global cir_stat#円の情報[cx, cy, R]
-    cir_stat=fit_circle(cut_and_smpling(50))
-    
+    spots=cut_and_smpling(50)
+    cir_stat=fit_circle(spots)
 
-    
-    
+    if show:
+        show_circle(spots)
+
+    return cir_stat
