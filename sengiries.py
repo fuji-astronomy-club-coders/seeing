@@ -196,7 +196,89 @@ def sengiri_X2_justOUTside(
                     print("Msapl", Maxd_sample)
             
     return lst
+def sengiri_X2_justOUTside_edgepoints(    
+    file
+    ,gap=170
+    ,limb_wigth = 24 
+    ):
+    """
+    listです！！説明してる暇はありません！！
+    """
+    twox,twoy=[],[]
+    onex,oney=[],[]
+    if file.endswith(".tiff" or ".tif"):
+        lst = np.zeros(gap*8)
+        xc, yc, r = MIN2(file)
+        img= cv2.imread(file,cv2.IMREAD_UNCHANGED)
+        for gaps in range(-gap , gap):
+        
+            #plt.clf()
+            #太陽の縁を探索
+            gaps_r =int(np.sqrt(np.abs(r**2 - gaps**2)))
+            gaps_r = int(gaps_r)
+            gaps = int(gaps)
+            #  memo img[top : bottom, left : right]
+            
+            pl=["L","R","T","B"]
+            xyof=[
+                (gaps,gaps+1)
+                ,[(-gaps_r-limb_wigth,-gaps_r+limb_wigth),(gaps_r-limb_wigth,gaps_r+limb_wigth)]
+            ]
+            #縦倒し,逆順
+            pldc={
+                "L":(True,0),
+                "R":(True,1),
+                "T":(False,0),
+                "B":(False,1)
+                }
+            for place in pl:
+                
+                pld = pldc[place]
+                "↑参照しておくよん"
+                if pld[0]:
+                    y_of,x_of = xyof[0],xyof[1][pld[1]] 
+                elif not pld[0]:
+                    y_of,x_of = xyof[1][pld[1]],xyof[0]
+                sample=img[int(yc+y_of[0]):int(yc+y_of[1]),int(xc+x_of[0]):int(xc+x_of[1])]
+                sample=np.array(np.ravel(sample))
+                if bool(pld[1]):
+                    sample=np.flip(sample)
+                fd_sample = np.abs(np.gradient(sample))
+                Maxd_sample = np.amax(fd_sample)
+                findex_Max_d_sample = np.where(fd_sample == Maxd_sample)[0][0]
+                d_sample = np.abs(np.gradient(np.gradient(sample)))
+                if pldc[place][1] == 1:#縦倒しのとき
+                    d_sample=d_sample[:findex_Max_d_sample]
+                else:
+                    d_sample=d_sample[findex_Max_d_sample:]
+                Maxd_sample=np.max(d_sample)
+                index_Max_d_sample = np.where(d_sample == Maxd_sample)[0][0]
+                index_Max_d_sample = 2*limb_wigth-index_Max_d_sample if bool(pld[1]) else index_Max_d_sample
+                real_r = gaps_r - limb_wigth +index_Max_d_sample +(-limb_wigth if not bool(pld[1]) else findex_Max_d_sample)#limbまでの距離
+                freal_r = gaps_r - limb_wigth +findex_Max_d_sample#limbまでの距離
+                if place == "L":
+                    twox.append(xc-real_r)
+                    twoy.append(yc+gaps)
+                    onex.append(xc+-freal_r)
+                    oney.append(yc+gaps)
+                elif place == "R":
+                    twox.append(xc+real_r)
+                    twoy.append(yc+gaps)
+                    onex.append(xc+freal_r)
+                    oney.append(yc+gaps)
+                elif place == "T":
+                    twox.append(xc+gaps)
+                    twoy.append(yc-real_r)
+                    onex.append(xc+gaps)
+                    oney.append(yc-freal_r)
+                elif place == "B":
+                    twox.append(xc+gaps)
+                    twoy.append(yc+real_r)
+                    onex.append(xc+gaps)
+                    oney.append(yc+freal_r)
+    return [twox,twoy],[onex,oney]
 
+    return twox,twoy
 def sengiri_X2_drowero(file,
                     lookgap=None,
                     gap=170,
