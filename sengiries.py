@@ -200,6 +200,7 @@ def sengiri_X2_justOUTside_edgepoints(
     file
     ,gap=170
     ,limb_wigth = 24 
+    ,look=False
     ):
     """
     listです！！説明してる暇はありません！！
@@ -259,53 +260,53 @@ def sengiri_X2_justOUTside_edgepoints(
                 d_far=far+limb_wigth-index_Max_d_sample
             
                 error_reason = str(sys.exc_info()[0]) + ": " + str(sys.exc_info()[1])
-                #エラーが出たときのMIN_edge
-                plt.imshow(img, cmap='magma')
-                plt.scatter(Medge[0], Medge[1], color='cyan', label='MIN edge', s=10)
-                plt.plot([sampe[0],sampe[1]], [sampe[2],sampe[3]], color='green', label='sample', alpha=0.5)
-                plt.show(block=False)
-                #縁サンプルの折れ線
-                fig, ax = plt.subplots()
-                # タイトル
-                fig.suptitle(f"{file.split('\\')[-1]}_{place}_{gaps}")
-                fig.text(0.5, 0.92, f"error reason: {str(sys.exc_info()[0]) + ': ' + str(sys.exc_info()[1])}", ha='center')
-                # 第2軸（右）
-                
-                ax.plot(sample, color="green", label="sample",linewidth=0.7,alpha=0.7)
-                # 第1軸（左）
-                ax2 = ax.twinx()
-                ax2.plot(fd_sample, label="fd_sample",linewidth=0.7)
-                ax2.plot(rowd_sample, label="d_sample",linewidth=0.7)
-                ax2.scatter(findex_Max_d_sample, fdmax, color="red")
-                ax2.scatter(index_Max_d_sample, rowd_sample[index_Max_d_sample], color="blue", label="d_sample max")
-                
-                #min2の縁をプロット
-                ax2.axvline(x=limb_wigth, color="gray", label="min2 edge", linestyle="--")
-                # 凡例をまとめる
-                lines1, labels1 = ax.get_legend_handles_labels()
-                lines2, labels2 = ax2.get_legend_handles_labels()
-                ax.legend(lines1 + lines2, labels1 + labels2, loc="upper right")
-                plt.show(block=True)
-                if place == "L":
-                    dx.append(xc-d_far)
-                    dy.append(yc+gaps)
-                    fx.append(xc-f_far)
-                    fy.append(yc+gaps)
-                elif place == "R":
-                    dx.append(xc+d_far)
-                    dy.append(yc+gaps)
-                    fx.append(xc+f_far)
-                    fy.append(yc+gaps)
-                elif place == "T":
-                    dy.append(yc-d_far)
-                    dx.append(xc+gaps)
-                    fy.append(yc-f_far)
-                    fx.append(xc+gaps)
-                elif place == "B":
-                    dy.append(yc+d_far)
-                    dx.append(xc+gaps)
-                    fy.append(yc+f_far)
-                    fx.append(xc+gaps)
+                if look:
+                    plt.imshow(img, cmap='magma')
+                    plt.scatter(Medge[0], Medge[1], color='cyan', label='MIN edge', s=10)
+                    plt.plot([sampe[0],sampe[1]], [sampe[2],sampe[3]], color='green', label='sample', alpha=0.5)
+                    plt.show(block=False)
+                    #縁サンプルの折れ線
+                    fig, ax = plt.subplots()
+                    # タイトル
+                    fig.suptitle(f"{file.split('\\')[-1]}_{place}_{gaps}")
+                    fig.text(0.5, 0.92, f"error reason: {str(sys.exc_info()[0]) + ': ' + str(sys.exc_info()[1])}", ha='center')
+                    # 第2軸（右）
+                    
+                    ax.plot(sample, color="green", label="sample",linewidth=0.7,alpha=0.7)
+                    # 第1軸（左）
+                    ax2 = ax.twinx()
+                    ax2.plot(fd_sample, label="fd_sample",linewidth=0.7)
+                    ax2.plot(rowd_sample, label="d_sample",linewidth=0.7)
+                    ax2.scatter(findex_Max_d_sample, fdmax, color="red")
+                    ax2.scatter(index_Max_d_sample, rowd_sample[index_Max_d_sample], color="blue", label="d_sample max")
+                    
+                    #min2の縁をプロット
+                    ax2.axvline(x=limb_wigth, color="gray", label="min2 edge", linestyle="--")
+                    # 凡例をまとめる
+                    lines1, labels1 = ax.get_legend_handles_labels()
+                    lines2, labels2 = ax2.get_legend_handles_labels()
+                    ax.legend(lines1 + lines2, labels1 + labels2, loc="upper right")
+                    plt.show(block=True)
+                    if place == "L":
+                        dx.append(xc-d_far)
+                        dy.append(yc+gaps)
+                        fx.append(xc-f_far)
+                        fy.append(yc+gaps)
+                    elif place == "R":
+                        dx.append(xc+d_far)
+                        dy.append(yc+gaps)
+                        fx.append(xc+f_far)
+                        fy.append(yc+gaps)
+                    elif place == "T":
+                        dy.append(yc-d_far)
+                        dx.append(xc+gaps)
+                        fy.append(yc-f_far)
+                        fx.append(xc+gaps)
+                    elif place == "B":
+                        dy.append(yc+d_far)
+                        dx.append(xc+gaps)
+                        fy.append(yc+f_far)
+                        fx.append(xc+gaps)
     return [dx,dy],[fx,fy]
 
     return twox,twoy
