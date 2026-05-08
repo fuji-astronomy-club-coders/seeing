@@ -269,7 +269,8 @@ def sengiri_X2_justOUTside_edgepoints(
                 try:
                     pld = pldc[place]
                     Medge=MIN_edge(place,gaps,far)
-                    if pld[0]:
+                    print("Medge",Medge)
+                    if not pld[0]:
                         sampe=[Medge[0]-limb_wigth,Medge[0]+limb_wigth,Medge[1],Medge[1]+1]
                     else:
                         sampe=[Medge[0],Medge[0]+1,Medge[1]-limb_wigth,Medge[1]+limb_wigth]
