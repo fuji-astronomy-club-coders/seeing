@@ -6,7 +6,7 @@ from glob import glob
 from sengiries import sengiri_X2_justOUTside_edgepoints
 
 sun_image=glob(".\\"+"*.tiff")[1]
-two,one=sengiri_X2_justOUTside_edgepoints(sun_image,limb_wigth=400)
+two,one=sengiri_X2_justOUTside_edgepoints(sun_image,limb_wigth=100)
 plt.imshow(cv2.imread(sun_image, cv2.IMREAD_UNCHANGED), cmap='gray')
 size=3.5
 plt.scatter(two[0], two[1], color='cyan', label='twice diff max', s=size)
