@@ -244,18 +244,36 @@ def sengiri_X2_justOUTside_edgepoints(
                 if bool(pld[1]):
                     sample=np.flip(sample)
                 fd_sample = np.abs(np.gradient(sample))
-                Maxd_sample = np.amax(fd_sample)
-                findex_Max_d_sample = np.where(fd_sample == Maxd_sample)[0][0]
+                fMaxd_sample = np.amax(fd_sample)
+                findex_Max_d_sample = np.where(fd_sample == fMaxd_sample)[0][0]
+                if bool(pld[1]):
+                    fd_sample=np.flip(fd_sample)
+                ftruthindex_Max_d_sample = np.where(fd_sample == fMaxd_sample)[0][0]
                 d_sample = np.abs(np.gradient(np.gradient(sample)))
-                if pldc[place][1] == 1:#縦倒しのとき
-                    d_sample=d_sample[:findex_Max_d_sample]
-                else:
-                    d_sample=d_sample[findex_Max_d_sample:]
+                rowd_sample = d_sample
+                d_sample=d_sample[:findex_Max_d_sample]
                 Maxd_sample=np.max(d_sample)
-                index_Max_d_sample = np.where(d_sample == Maxd_sample)[0][0]
-                index_Max_d_sample = 2*limb_wigth-index_Max_d_sample if bool(pld[1]) else index_Max_d_sample
-                real_r = gaps_r - limb_wigth +index_Max_d_sample +(-limb_wigth if not bool(pld[1]) else findex_Max_d_sample)#limbまでの距離
-                freal_r = gaps_r - limb_wigth +findex_Max_d_sample#limbまでの距離
+                if bool(pld[1]):
+                    rowd_sample=np.flip(rowd_sample)
+                index_Max_d_sample = np.where(rowd_sample == Maxd_sample)[0][0]
+                if False:
+                    fig, ax = plt.subplots()
+                    ax.set_title(f"{file.split('\\')[-1]}_{place}_{gaps}")
+                    # sampleをプロット
+                    ax.plot(sample, color="green", label="sample")
+                    ax2 = ax.twinx()
+                    ax.plot(fd_sample, label="fd_sample")
+                    ax.plot(rowd_sample, label="d_sample")
+                    ax.scatter(findex_Max_d_sample, fMaxd_sample, color="red", label="fd max")
+                    ax.scatter(index_Max_d_sample, Maxd_sample, color="blue", label="d max")
+                    ax.legend(loc="upper right")
+                
+                plt.show()
+                if not bool(pld[1]):
+                    index_Max_d_sample = 2*limb_wigth-index_Max_d_sample
+                    ftruthindex_Max_d_sample = 2*limb_wigth-ftruthindex_Max_d_sample
+                real_r = gaps_r - limb_wigth +index_Max_d_sample #limbまでの距離
+                freal_r = gaps_r - limb_wigth +ftruthindex_Max_d_sample#limbまでの距離
                 if place == "L":
                     twox.append(xc-real_r)
                     twoy.append(yc+gaps)
