@@ -133,6 +133,7 @@ def sengiri_X2_justOUTside(
     file
     ,gap=170
     ,limb_wigth = 24 
+    ,func=MIN2
     ):
     """
     一回微分の最大値よりも中心から遠い範囲で二回微分の最大値を探すように変更しました。
@@ -141,7 +142,7 @@ def sengiri_X2_justOUTside(
     
     if file.endswith(".tiff" or ".tif"):
         lst = np.zeros(gap*8)
-        xc, yc, r = MIN2(file)
+        xc, yc, r = func(file)
         img= cv2.imread(file,cv2.IMREAD_UNCHANGED)
         for gaps in range(-gap , gap):
         

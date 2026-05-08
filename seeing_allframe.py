@@ -21,6 +21,8 @@ from pathlib import Path
 import glob
 import time
 from KANSUU import MIN2
+from MIN2_bury_sunspots import MIN2_bury_sunspots
+from sengiries import sengiri_2X_justOUTside as sengiri
 from tkinter import filedialog as fd
 from scipy.interpolate import CubicSpline
 from scipy.optimize import minimize_scalar
@@ -54,175 +56,7 @@ def folder_read(fpath):
         if os.path.isdir(os.path.join(fpath, name))
         ]
     return folders
-def sengiri(file):
-    lst = np.zeros(gap*8)
-    #plt.clf()
-    #保存するファイル名
-    #file0=file
-    #読み込むファイル名
-    #-- ファイルの読み込み 読み込んだ太陽像はimg--
-    """img=cv2.imread(file,0)
-    #-- 太陽像を円と考えて検出する --
-    #（※太陽像の真ん中がサチレーションしているので、うまく検出できていない：宿題）
-    circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, dp=3,minDist=80,param1=80,param2=100, minRadius=0, maxRadius=0)
-    if circles is None:
-        return None
-    circles = np.array(circles)
-    #-- 検出された円の中心(xc,yc)と円の半径r --
-    xc=np.float64(circles[0,0,0])
-    yc=np.float64(circles[0,0,1])
-    r=np.float64(circles[0,0,2])
-    #print(r)    
-    """
-    xc, yc, r = MIN2(file)
-    if file.endswith(".tiff" or ".tif"):
-        img=cv2.imread(file,-1)
 
-    #太陽像を数字として扱うための設定
-    img=np.float64(img)
-    imgg= cv2.imread(file,cv2.IMREAD_UNCHANGED)
-    """
-    plt.imshow(imgg,cmap='gray')
-    theta = np.linspace(0, 2*np.pi, 400)
-    circle_x = xc + r * np.cos(theta)
-    circle_y = yc + r * np.sin(theta)
-    plt.plot(circle_x, circle_y, 'c--', linewidth=2, label='Hough circle',alpha=.5)
-    plt.savefig(f"C:\\Users\\fujit\\OneDrive\\デスクトップ\\circleBATTLE\\figure{file.split('\\')[-1]}.png")
-    plt.close()"""
-    #プロットの消去
-    #plt.clf()
-    #-- 空間微分によるlimb位置の検出 --
-    #  memo img[top : bottom, left : right]
-    #右limbを一次元(一本線)で切り出し
-    #plt.imshow(img,cmap='gray')
-    pix_dis = 1000
-    x = np.array(range(limb_wigth*2))
-    #x_dense = np.linspace(0,limb_wigth*2-1, limb_wigth*2*pix_dis)
-    for gaps in range(-gap , gap):
-        
-        #plt.clf()
-        #太陽の縁を探索
-        gaps_r =int(np.sqrt(np.abs(r**2 - gaps**2)))
-        #  memo img[top : bottom, left : right]
-        #これは左縁
-        gaps_r = int(gaps_r)
-        gaps = int(gaps)
-
-        sample = img[int(yc+gaps):int(yc+gaps+1),int(xc-gaps_r-limb_wigth):int(xc-gaps_r+limb_wigth)]
-        sample = np.ravel(sample)
-
-        fd_sample = np.abs(np.diff(sample))
-        Maxd_sample = np.amax(fd_sample)
-        index_Max_d_sample = np.where(fd_sample == Maxd_sample)[0][0]
-        
-        sample = img[int(yc+gaps):int(yc+gaps+1),int(xc-gaps_r-limb_wigth):int(xc-gaps_r - limb_wigth + index_Max_d_sample)]
-        sample = np.ravel(sample)
-
-        d_sample = np.abs(np.diff(np.diff(sample)))
-        Maxd_sample = np.amax(d_sample)
-        index_Max_d_sample = np.where(d_sample == Maxd_sample)[0][0]
-        """start = max(index_Max_d_sample - pad, 0)
-        end = min(index_Max_d_sample + pad, len(sample)-1)
-        x2 = np.arange(start, end)
-        y2 = sample[start:end]"""
-        #cs = CubicSpline(x2, y2)
-        #cs_g = cs.derivative()
-        #max_x = minimize_scalar(lambda t: -cs_g(t), bounds=(x2[0], x2[-1]), method='bounded')
-        real_r = gaps_r - limb_wigth + index_Max_d_sample#limbまでの距離
-        lst[gaps+gap] = real_r - gaps_r
-        
-        """
-        print(y_max,position[0]/pix_dis)
-        plt.plot(x, sample, 'o', label='Original Data')
-        plt.plot(x_dense, cs(x_dense), label='Cubic Spline')
-        plt.plot(x_dense, cs_g(x_dense), label='Cubic Spline_gradiented')
-        plt.plot(max_x.x, cs(max_x.x), 'rx', label='Maximum')
-
-        #plt.plot(x_dense, poly_lagrange(x_dense), label='Lagrange Polynomial')
-        #plt.plot(x_dense, poly_fit(x_dense), label='2nd Degree Fit')
-        plt.legend()
-        plt.grid()
-        plt.show()
-        exit()
-        """     
-        #plt.plot([xc-gaps_r-limb_wigth,xc-gaps_r+limb_wigth],[yc+gaps,yc+gaps],color="b")
-
-        #繰り返し
-        #右縁
-        sample=img[int(yc+gaps):int(yc+gaps+1),int(xc+gaps_r-limb_wigth):int(xc+gaps_r+limb_wigth)]
-        sample = np.ravel(sample)
-        
-        fd_sample = np.abs(np.diff(sample))
-        Maxd_sample = np.amax(fd_sample)
-        findex_Max_d_sample = np.where(fd_sample == Maxd_sample)[0][0]
-        
-        sample=img[int(yc+gaps):int(yc+gaps+1),int(xc+gaps_r-limb_wigth +findex_Max_d_sample):int(xc+gaps_r+limb_wigth)]
-        sample = np.ravel(sample)
-        
-        d_sample = np.abs(np.diff(np.diff(sample)))
-        Maxd_sample = np.amax(d_sample)
-        index_Max_d_sample = np.where(d_sample == Maxd_sample)[0][0]
-        """start = max(index_Max_d_sample - pad, 0)
-        end = min(index_Max_d_sample + pad, len(sample)-1)
-        x2 = np.arange(start, end)
-        y2 = sample[start:end]"""
-        #cs = CubicSpline(x2, y2)
-        #cs_g = cs.derivative()
-        #max_x = minimize_scalar(lambda t: cs_g(t), bounds=(x2[0], x2[-1]), method='bounded')        
-        real_r = gaps_r - limb_wigth +index_Max_d_sample+findex_Max_d_sample#limbまでの距離
-        lst[gaps+(gap*3)] = real_r - gaps_r
-
-        #plt.plot([xc+gaps_r-limb_wigth,xc+gaps_r+limb_wigth],[yc+gaps,yc+gaps],color="b")
-        #上縁
-        sample=img[int(yc-gaps_r-limb_wigth):int(yc-gaps_r+limb_wigth),int(xc+gaps):int(xc+gaps+1)]
-        sample = np.ravel(sample)
-        
-        fd_sample = np.abs(np.diff(sample))
-        Maxd_sample = np.amax(fd_sample)
-        findex_Max_d_sample = np.where(fd_sample == Maxd_sample)[0][0]
-        
-        sample=img[int(yc-gaps_r-limb_wigth+findex_Max_d_sample):int(yc-gaps_r+limb_wigth),int(xc+gaps):int(xc+gaps+1)]
-        sample = np.ravel(sample)
-        
-        d_sample = np.abs(np.diff(np.diff(sample)))
-        Maxd_sample = np.amax(d_sample)
-        index_Max_d_sample = np.where(d_sample == Maxd_sample)[0][0]
-        """start = max(index_Max_d_sample - pad, 0)
-        end = min(index_Max_d_sample) + pad, len(sample)
-        x2 = np.arange(start, end)
-        y2 = sample[start:end]"""
-        #cs = CubicSpline(x2, y2)
-        #cs_g = cs.derivative()
-        #max_x = minimize_scalar(lambda t: -cs_g(t), bounds=(x2[0], x2[-1]), method='bounded')
-        real_r = gaps_r - limb_wigth + index_Max_d_sample+findex_Max_d_sample#limbまでの距離
-        lst[gaps+(gap*5)] = real_r - gaps_r
-
-        #plt.plot([xc+gaps,xc+gaps],[yc-gaps_r-limb_wigth,yc-gaps_r+limb_wigth],color="r")
-        #下縁
-        sample=img[int(yc+gaps_r-limb_wigth):int(yc+gaps_r+limb_wigth),int(xc+gaps):int(xc+gaps+1)]
-        sample = np.ravel(sample)
-        
-        fd_sample = np.abs(np.diff(sample))
-        Maxd_sample = np.amax(fd_sample)
-        index_Max_d_sample = np.where(fd_sample == Maxd_sample)[0][0]
-        
-        sample=img[int(yc+gaps_r-limb_wigth):int(yc+gaps_r-limb_wigth+index_Max_d_sample),int(xc+gaps):int(xc+gaps+1)]
-        sample = np.ravel(sample)
-        
-        d_sample = np.abs(np.diff(np.diff(sample)))
-        Maxd_sample = np.amax(d_sample)
-        index_Max_d_sample = np.where(d_sample == Maxd_sample)[0][0]
-        """start = max(index_Max_d_sample - pad, 0)
-        end = min(index_Max_d_sample + pad, len(sample)-1)
-        x2 = np.arange(start, end)
-        y2 = sample[start:end]"""
-        #cs = CubicSpline(x2, y2)
-        #cs_g = cs.derivative()
-        #max_x = minimize_scalar(lambda t: cs_g(t), bounds=(x2[0], x2[-1]), method='bounded')
-        real_r = gaps_r - limb_wigth + index_Max_d_sample#limbまでの距離
-
-        lst[gaps+(gap*7)] = real_r - gaps_r
-    return lst
 def Kansu(Sam_dir,executor=None):
     foldername = os.path.basename(os.path.dirname(Sam_dir))
     #print()
@@ -240,12 +74,10 @@ def Kansu(Sam_dir,executor=None):
     files = glob.glob(Sam_dir+"\\"+"*.tiff") + glob.glob(Sam_dir+"*.tif") + glob.glob(Sam_dir+"*.jpg")
     #print("files",files)
     with tqdm.tqdm(total=len(files)) as progress:
-        lsts=ex.map(sengiri, files)
+        lsts=ex.map(sengiri, files,func=MIN2_bury_sunspots)
         for data in lsts:
             progress.update(1)
             lst.append(data)
-
-
     st_max = 0
     st_min = 1000000000
     counter = 0  
