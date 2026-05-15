@@ -4,9 +4,10 @@ import matplotlib.pyplot as plt
 from KANSUU import list_folders
 from glob import glob
 from sengiries import sengiri_X2_justOUTside_edgepoints
-
-sun_image=glob(".\\"+"*.tiff")[1]
-two,one=sengiri_X2_justOUTside_edgepoints(sun_image,limb_wigth=400,look=True)
+import os
+print(os.getcwd())
+sun_image=glob(f"{os.getcwd()}\\data_souces\\"+"*.tiff")[1]
+two,one=sengiri_X2_justOUTside_edgepoints(sun_image,limb_wigth=400)
 
 plt.imshow(cv2.imread(sun_image, cv2.IMREAD_UNCHANGED), cmap='gray')
 size=25
