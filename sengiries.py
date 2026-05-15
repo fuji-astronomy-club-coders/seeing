@@ -13,6 +13,19 @@ file: 画像ファイルのパス
 gap: 各扇方の弧の端と扇型の中線の距離…78期生の偉大な雄が数えたら全周1360点らしく、それでやってます。default:170
 limb_wigth: 太陽の縁からの距離。単位はピクセル。太陽の縁±limb_wigthの範囲で実際の縁を探します。default:24
 """
+def is_sample0(sample,place,gaps,tx,xc,yc,r,x_of,y_of,img):
+                    if sample.size==0:
+                        print(f"Empty sample found for place: {place}, gap: {gaps}")
+                        figure, ax = plt.subplots()
+                        ax.imshow(img, cmap='magma')
+                        ax.scatter( xc+np.mean(x_of), yc+np.mean(y_of), color='cyan', label='MIN edge', s=10)
+                        ax.plot( [xc+x_of[0],xc+x_of[1]],[yc+y_of[0],yc+y_of[1]], color='green', label='sample', alpha=0.5)
+                        import matplotlib.patches as patches
+                        circle = patches.Circle((xc, yc), r, fill=False, edgecolor='yellow', linewidth=2)
+                        ax.add_patch(circle)
+                        print(tx)
+                        print(int(yc+y_of[0]), int(yc+y_of[1]), int(xc+x_of[0]), int(xc+x_of[1]))
+                        plt.show(block=True)
 def sengiri_X2_GetERO(
     file
     ,gap=170
@@ -196,7 +209,119 @@ def sengiri_X2_justOUTside(
                     print("Msapl", Maxd_sample)
             
     return lst
+def sengiri_X2_justOUTside_edgepoints(    
+    file
+    ,gap=170
+    ,limb_wigth = 24 
+    ,look=False
+    ):
+    """
+    listです！！説明してる暇はありません！！
+    """
+    twox,twoy=[],[]
+    onex,oney=[],[]
+    if file.endswith(".tiff" or ".tif"):
+        lst = np.zeros(gap*8)
+        xc, yc, r = MIN2(file)
+        img= cv2.imread(file,cv2.IMREAD_UNCHANGED)
+        for gaps in range(-gap , gap):
+        
+            #plt.clf()
+            #太陽の縁を探索
+            gaps_r =int(np.sqrt(np.abs(r**2 - gaps**2)))
+            gaps_r = int(gaps_r)
+            gaps = int(gaps)
+            #  memo img[top : bottom, left : right]
+            
+            pl=["L","R","T","B"]
+            xyof=[
+                (gaps,gaps+1)
+                ,[(-gaps_r-limb_wigth,-gaps_r+limb_wigth),(gaps_r-limb_wigth,gaps_r+limb_wigth)]
+            ]
+            #縦倒し,逆順
+            pldc={
+                "L":(True,0),
+                "R":(True,1),
+                "T":(False,0),
+                "B":(False,1)
+                }
+            for place in pl:
+                
+                pld = pldc[place]
+                "↑参照しておくよん"
+                if pld[0]:
+                    y_of,x_of = xyof[0],xyof[1][pld[1]] 
+                elif not pld[0]:
+                    y_of,x_of = xyof[1][pld[1]],xyof[0]
+                
+                splrang=( int(yc+y_of[0]), int(yc+y_of[1]), int(xc+x_of[0]), int(xc+x_of[1]) )
+                
+                #samplerangeが画像の範囲外になっていないか確認
+                if splrang[0] < 0 or splrang[1] > img.shape[0] or splrang[2] < 0 or splrang[3] > img.shape[1]:
+                    print("image shape:", img.shape)
+                    print("sample range:", splrang)
+                    optwidth=limb_wigth+min([img.shape[0]-(yc+y_of[1]),yc+y_of[0], img.shape[1]-(xc+x_of[1]), xc+x_of[0]])
+                    print("suggested Optimal limb_wigth at this point:", int(optwidth))
+                    raise IndexError(f"Sample range is out of image bounds for place: {place}, gap: {gaps}\nRead the termination message for details.")
+                
+                sample=img[splrang[0]:splrang[1], splrang[2]:splrang[3]]
+                sample=np.array(np.ravel(sample))
+                if bool(pld[1]):
+                    sample=np.flip(sample)
+                fd_sample = np.abs(np.gradient(sample))
+                fMaxd_sample = np.amax(fd_sample)
+                findex_Max_d_sample = np.where(fd_sample == fMaxd_sample)[0][0]
+                if bool(pld[1]):
+                    fd_sample=np.flip(fd_sample)
+                ftruthindex_Max_d_sample = np.where(fd_sample == fMaxd_sample)[0][0]
+                d_sample = np.abs(np.gradient(np.gradient(sample)))
+                rowd_sample = d_sample
+                d_sample=d_sample[:findex_Max_d_sample]
+                Maxd_sample=np.max(d_sample)
+                if bool(pld[1]):
+                    rowd_sample=np.flip(rowd_sample)
+                index_Max_d_sample = np.where(rowd_sample == Maxd_sample)[0][0]
+                if look:
+                    fig, ax = plt.subplots()
+                    ax.set_title(f"{file.split('\\')[-1]}_{place}_{gaps}")
+                    # sampleをプロット
+                    ax.plot(sample, color="green", label="sample")
+                    ax2 = ax.twinx()
+                    ax.plot(fd_sample, label="fd_sample")
+                    ax.plot(rowd_sample, label="d_sample")
+                    ax.scatter(findex_Max_d_sample, fMaxd_sample, color="red", label="fd max")
+                    ax.scatter(index_Max_d_sample, Maxd_sample, color="blue", label="d max")
+                    ax.legend(loc="upper right")
+                
+                plt.show()
+                if not bool(pld[1]):
+                    index_Max_d_sample = 2*limb_wigth-index_Max_d_sample
+                    ftruthindex_Max_d_sample = 2*limb_wigth-ftruthindex_Max_d_sample
+                real_r = gaps_r - limb_wigth +index_Max_d_sample #limbまでの距離
+                freal_r = gaps_r - limb_wigth +ftruthindex_Max_d_sample#limbまでの距離
+                if place == "L":
+                    twox.append(xc-real_r)
+                    twoy.append(yc+gaps)
+                    onex.append(xc+-freal_r)
+                    oney.append(yc+gaps)
+                elif place == "R":
+                    twox.append(xc+real_r)
+                    twoy.append(yc+gaps)
+                    onex.append(xc+freal_r)
+                    oney.append(yc+gaps)
+                elif place == "T":
+                    twox.append(xc+gaps)
+                    twoy.append(yc-real_r)
+                    onex.append(xc+gaps)
+                    oney.append(yc-freal_r)
+                elif place == "B":
+                    twox.append(xc+gaps)
+                    twoy.append(yc+real_r)
+                    onex.append(xc+gaps)
+                    oney.append(yc+freal_r)
+    return [twox,twoy],[onex,oney]
 
+    return twox,twoy
 def sengiri_X2_drowero(file,
                     lookgap=None,
                     gap=170,
