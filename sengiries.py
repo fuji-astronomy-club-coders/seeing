@@ -200,6 +200,7 @@ def sengiri_X2_justOUTside_edgepoints(
     file
     ,gap=170
     ,limb_wigth = 24 
+    ,look=False
     ):
     """
     listです！！説明してる暇はありません！！
@@ -239,8 +240,23 @@ def sengiri_X2_justOUTside_edgepoints(
                     y_of,x_of = xyof[0],xyof[1][pld[1]] 
                 elif not pld[0]:
                     y_of,x_of = xyof[1][pld[1]],xyof[0]
+                def sample_getter(tx):
+                    if sample.size==0:
+                        print(f"Empty sample found for place: {place}, gap: {gaps}")
+                        figure, ax = plt.subplots()
+                        ax.imshow(img, cmap='magma')
+                        ax.scatter( xc+np.mean(x_of), yc+np.mean(y_of), color='cyan', label='MIN edge', s=10)
+                        ax.plot( [xc+x_of[0],xc+x_of[1]],[yc+y_of[0],yc+y_of[1]], color='green', label='sample', alpha=0.5)
+                        import matplotlib.patches as patches
+                        circle = patches.Circle((xc, yc), r, fill=False, edgecolor='yellow', linewidth=2)
+                        ax.add_patch(circle)
+                        print(tx)
+                        print(int(yc+y_of[0]), int(yc+y_of[1]), int(xc+x_of[0]), int(xc+x_of[1]))
+                        plt.show(block=True)
                 sample=img[int(yc+y_of[0]):int(yc+y_of[1]),int(xc+x_of[0]):int(xc+x_of[1])]
+                sample_getter(1)
                 sample=np.array(np.ravel(sample))
+                sample_getter(2)
                 if bool(pld[1]):
                     sample=np.flip(sample)
                 fd_sample = np.abs(np.gradient(sample))
@@ -256,7 +272,7 @@ def sengiri_X2_justOUTside_edgepoints(
                 if bool(pld[1]):
                     rowd_sample=np.flip(rowd_sample)
                 index_Max_d_sample = np.where(rowd_sample == Maxd_sample)[0][0]
-                if False:
+                if look:
                     fig, ax = plt.subplots()
                     ax.set_title(f"{file.split('\\')[-1]}_{place}_{gaps}")
                     # sampleをプロット
