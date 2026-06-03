@@ -108,6 +108,7 @@ def MIN2_ignore_sunspots(readed_img,n=10,light_threshold=50,limb_wigth=24,show=F
     
     #===外側の点と一回目の円からlimb_wigth*(3/2)の範囲にない点を抽出===
     not_sunspots_idx=[]
+    sunspot=False
     #print (f"外側の点の数:{len(outside_spots)},全体の点の数:{len(spots)}")
     for i in range(len(spots)):
         x=spots[i][0]
@@ -118,16 +119,23 @@ def MIN2_ignore_sunspots(readed_img,n=10,light_threshold=50,limb_wigth=24,show=F
                 #print(f"x,y:{x,y} min2far:{min2far},y-cyo:{np.abs(cyo-y)}")
                 if min2far-np.abs(cxo-x) < limb_wigth*(2/3):
                     not_sunspots_idx+=[i]
+                else:
+                    sunspot=True
             else:#円のRLTBのうちTBなら
                 min2far = np.sqrt(ro**2-(x-cxo)**2)
                 #print(f"x,y:{x,y} min2far:{min2far},x-cxo:{np.abs(cxo-x)}")
                 if min2far-np.abs(cyo-y) < limb_wigth*(2/3):
                     not_sunspots_idx+=[i]
+                else:
+                    sunspot=True
         else:#外側の点は全てnot_sunspots_idxに入れる
             not_sunspots_idx+=[i]
 
-    #黒点とみなされない点だけで円を作成
-    cxl,cyl,rl=fit_circle(np.array([spots[i] for i in not_sunspots_idx], dtype=float))
+    if sunspot:    
+        #黒点とみなされない点だけで円を作成
+        cxl,cyl,rl=fit_circle(np.array([spots[i] for i in not_sunspots_idx], dtype=float))
+    else:
+        cxl,cyl,rl=cx,cy,r
 
     if show:
         show_circle([spots[i] for i in not_sunspots_idx],(cxl,cyl,rl))
@@ -135,4 +143,7 @@ def MIN2_ignore_sunspots(readed_img,n=10,light_threshold=50,limb_wigth=24,show=F
 
 if __name__== "__main__":
     picpath=r"E:\projects\tenmon\img00000001.tiff"
-    print(MIN2_ignore_sunspots(cv2.imread(picpath,0),show=True))
+    from time import time
+    start = time()
+    print(MIN2_ignore_sunspots(cv2.imread(picpath,0),show=False))
+    print(f"処理時間:{time()-start}秒")
