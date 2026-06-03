@@ -40,17 +40,17 @@ def fit_circle(spots):#縁の点のサンプルを受け取って円のstatusを
     R = np.sqrt(cx**2 + cy**2 - C)
     return [cx,cy,R]
 
-def show_circle(spots,cir_stat):#円のstatusを受け取って、画像に円と縁の点を描画して表示する。
-    x,y=spots[0],spots[1]
-    cx,cy,R=cir_stat[0],cir_stat[1],cir_stat[2]
+def show_circle(spots=False,cir_stat=False):#円のstatusを受け取って、画像に円と縁の点を描画して表示する。
     fig, ax = plt.subplots()#figとaxの作成
-    ax.imshow(img, cmap="gray")#画像をグレースケールで表示
+    ax.imshow(img, cmap="magma")#画像をグレースケールで表示
     ax.imshow(img, cmap="viridis")#画像をviridisで表示
-    circle = plt.Circle((cx, cy), R, fill=False, color='orange', linewidth=2)#結果の円を描画
-    ax.add_patch(circle)###
-
-    #各縁の点を描画
-    ax.scatter(x, y, color='red', label='Edges', s=50)
+    if cir_stat:#cir_statがFalseでないなら、円を描画
+        cx,cy,R=cir_stat[0],cir_stat[1],cir_stat[2]
+        circle = plt.Circle((cx, cy), R, fill=False, color='orange', linewidth=2)#結果の円を描画
+        ax.add_patch(circle)###
+    if spots:
+        x, y = zip(*spots)
+        ax.scatter(x, y, color='red', label='Edges', s=50)
     # 座標ラベルを表示
     for xi, yi in zip(x, y):
         ax.text(xi, yi, f"({xi:.0f}, {yi:.0f})",
@@ -123,5 +123,9 @@ def MIN2_bury_sunspots(readed_img,n=10,light_threshold=50,limb_wigth=24,show=Fal
     cx,cy,r=fit_circle([spots[0][i] for i in not_sunspots_idx],[spots[1][i] for i in not_sunspots_idx])
 
     if show:
-        show_circle(spots,(cx,cy,r))
-    return cx,cy,r
+        show_circle([spots[i] for i in not_sunspots_idx],(cxl,cyl,rl))
+    return cxl,cyl,rl
+
+if __name__== "__main__":
+    picpath=r"E:\projects\tenmon\img00000001.tiff"
+    print(MIN2_ignore_sunspots(cv2.imread(picpath,0),show=True))

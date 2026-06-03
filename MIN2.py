@@ -59,3 +59,7 @@ def MIN2(file,n=10,UNC=True):#20260319
     # ルートの中が負にならないよう絶対値をとる（4点の配置が悪い場合用）
     R = np.sqrt(np.abs(a**2 + b**2 - C))
     return [a, b, R]
+
+if __name__ == "__main__":
+    file = r"E:\projects\tenmon\img00000001.tiff"
+    print(MIN2(file, n=10, UNC=True))
