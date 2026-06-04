@@ -21,7 +21,7 @@ from pathlib import Path
 import glob
 import time
 from KANSUU import MIN2
-from MIN2_bury_sunspots import MIN2_bury_sunspots
+from MIN2_ignore_sunspots import MIN2_bury_sunspots
 from sengiries import sengiri_2X_justOUTside as sengiri
 from tkinter import filedialog as fd
 from scipy.interpolate import CubicSpline
